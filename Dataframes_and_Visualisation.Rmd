@@ -1,0 +1,237 @@
+---
+title: "Data Frames and Visualisation"
+author: "Katy Brown"
+date: "2026-07-03"
+output:
+  learnr::tutorial:
+    progressive: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "~/MB1A_Practicals")
+library(tidyverse)
+library(gt)
+library(maps)
+library(learnr)
+library(knitr)
+```
+
+## Data Frames and Visualisation - Part 1
+
+### Objectives
+
+In this practical we will learn to:
+
+* Load dataframes into R
+* Calculate dataframe summary statistics
+* Select specific columns and rows
+* Merge data from multiple dataframes
+* Convert data from "wide" to "long" format
+* Visualise data using scatter plots
+
+## Dataset
+For this worked example, we will use data from [this Science paper](https://doi.org/10.1126/science.ads0532), published in June 2026.
+
+This study tracked the migration of a songbird species, pied flycatchers (*Ficedula hypoleuca*). We will reproduce Figure 1B from this paper, which shows the breeding site, Iberian stopover location and winter location for 8 bird populations. All of the data we will use comes from the Supplementary Data associated with this publication.
+
+
+## CSV Format
+The data we will use in this practical is stored in comma-separated values (CSV) format, a plain-text file format where each line represents a row and values in columns are seperated by commas.
+
+For example, if we have the following table:
+
+
+```{r csv_example, echo=FALSE}
+df <- data.frame(
+          fruit = c("apple", "pear", "banana"),
+  length = c(22, 30, 55),
+  weight = c(150, 165, 170)
+)
+
+gt(df)
+```
+
+The contents of the CSV file would be:
+```{text}
+fruit,length,weight
+apple,22,150
+pear,30,165
+banana,55,170
+```
+
+### Practical Data
+
+The first part of the dataset we will use for this practical contains the longitude and latitude co-ordinates for breeding sites for eight specific populations of pied flycatcher.
+
+The file is in the data directory and named `breeding_site_locations.csv`. Open this file in a text editor (for example NotePad, TextEdit) and examine it.
+
+```{r question_moscow, echo = FALSE}
+question_text(
+"
+Quiz Question\n
+What is the longitude of the Moscow breeding site?",
+answer(36.7, correct=TRUE),
+allow_retry = TRUE)
+```
+
+## Reading a CSV file
+
+Now we will start to build an R script, inside an Rmarkdown document, to examine this dataset.
+
+The R function `read_csv` reads a CSV file into R. 
+
+If I wanted to read the file `weather_data.csv`, the code I would use would be:
+
+```{r read_weather_data}
+weather <- read_csv("Dataframes/data/weather_data.csv")
+```
+
+And to view the table I would just type the variable name do the following:
+
+```{r show_weather_data}
+weather
+```
+
+In your Rmarkdown document, read `breeding_site_locations.csv` into a variable, then view it.
+
+```{r read_bird_data, include=FALSE}
+bird_breeding_sites <- read_csv("Dataframes/data/breeding_site_locations.csv")
+```
+
+It should look like this:
+
+```{r view_breeding_location_data}
+bird_breeding_sites
+```
+
+## Plotting bird breeding sites
+
+Now we can draw a scatter plot.
+
+```{r initiate_plot_1}
+ggplot(bird_breeding_sites,
+       aes(
+         x = breeding_lon,
+         y = breeding_lat,
+        )
+       ) +
+  geom_point() +
+  annotation_borders(
+    linewidth=0.2
+  )
+```
+
+Read the table containing the bird migration data.
+
+```{r read_main_dataframe}
+bird_migration = read_csv("Dataframes/data/migratory_connectivity_dataset.csv")
+```
+
+
+```{r view_main_dataframe}
+gt(bird_migration)
+```
+
+```{r summarise_main_dataframe}
+summary_bird_migration <- bird_migration |>
+                           group_by(Site) |>
+                           summarize(
+                             iberian_lon = median(iblon, na.rm = TRUE),
+                             iberian_lat = median(iblat, na.rm = TRUE),
+                             winter_lon = median(winterLongitude, na.rm = TRUE),
+                             winter_lat = median(winterLatitude, na.rm = TRUE)
+                           )
+  
+```
+
+
+```{r merge_tables}
+birds <- full_join(summary_bird_migration, bird_breeding_sites)
+
+gt(birds)
+```
+
+```{r pivot}
+birds_piv <- birds |> 
+                  pivot_longer(
+                    cols=ends_with(c("_lon", "_lat")),
+                    names_to=c('Location_Type', '.value'),
+                    names_sep="_") |> arrange(Site, Location_Type)
+```
+
+```{r plot_all_points}
+ggplot(birds_piv,
+       aes(
+         x = lon,
+         y = lat
+       )
+  ) +
+  geom_point() +
+  annotation_borders(
+    linewidth=0.2
+  )
+
+```
+
+```{r colour_points_type, fig.width=10, fig.height=4.5}
+ggplot(birds_piv,
+       aes(
+         x = lon,
+         y = lat,
+         color = Location_Type
+       )
+  ) +
+  geom_point() +
+  annotation_borders(
+    linewidth=0.2
+  ) +
+  coord_quickmap()
+
+```
+
+```{r colour_points_site, fig.width=10, fig.height=4.5}
+
+ggplot(birds_piv,
+       aes(
+         x = lon,
+         y = lat,
+         color = Site
+       )
+  ) +
+  geom_point(size=3) +
+  annotation_borders(
+    linewidth=0.2
+  ) +
+  coord_quickmap(
+  xlim=c(-25, 100),
+  ylim=c(0, 55)
+)
+```
+
+```{r group}
+birds_by_site <- birds_piv |> group_by(Site)
+```
+
+```{r join_points_site, fig.width=10, fig.height=4.5}
+
+ggplot(birds_by_site,
+       aes(
+         x = lon,
+         y = lat,
+         color = Site,
+         shape = Location_Type,
+       )
+  ) +
+  geom_point(size=3) +
+  geom_path(aes(group = Site)) +
+  annotation_borders(
+    linewidth=0.2
+  ) +
+  coord_quickmap(
+  xlim=c(-20, 95),
+  ylim=c(0, 60)
+  ) + 
+  scale_color_brewer(palette = "Set1") + 
+  theme_bw()
+```

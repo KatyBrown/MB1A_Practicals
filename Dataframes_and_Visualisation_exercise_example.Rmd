@@ -1,0 +1,99 @@
+---
+title: "Data Frames and Visualisation"
+author: "Katy Brown"
+date: "2026-07-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "~/MB1A_Practicals")
+library(tidyverse)
+library(gt)
+library(maps)
+library(janitor)
+library(lubridate)
+```
+
+Download some animal location data from the database https://www.movebank.org/
+
+* On the MoveBank Site, click on "Data" and then "View and Manage Studies". 
+
+* Select "Studies where I can download any data"
+
+* Choose a study from the list. Search for an animal which interests you, if you like. It is best to choose a study with a moderate number of individuals, e.g. between 5 and 15, and 
+
+Rename the file so there are no gaps in the file name.
+
+First I will read the data with the locations of my species into a dataframe.
+
+```{r read_location_data}
+locations = read_csv("Dataframes/data/seals.csv") %>%
+            clean_names() %>%
+            mutate(Date = as_date(timestamp))
+```
+Look at the dataframe and check that the data looks as expected. Identify the columns containing the latitude and longitude data.
+
+```{r display_location_data}
+gt(locations)
+```
+
+Isolate the relevant columns. This data is all for one individual.
+```{r select_relevant_columns}
+loc_small <- locations %>% select(individual_local_identifier, location_long, location_lat, Date)
+```
+
+```{r summarise_data}
+loc_sum <- loc_small %>%
+           group_by(Date, individual_local_identifier) %>%
+           summarise(median_long = median(location_long),
+                     median_lat = median(location_lat))
+```
+
+
+```{r initiate_plot_1}
+ggplot(loc_sum,
+       aes(
+         x = median_long,
+         y = median_lat,
+        )
+       ) +
+  geom_point() +
+  annotation_borders(
+    linewidth=0.2
+  ) +
+  coord_quickmap()
+```
+
+```{r initiate_plot_1}
+ggplot(loc_sum,
+       aes(
+         x = median_long,
+         y = median_lat,
+        )
+       ) +
+  geom_point() +
+  annotation_borders(
+    linewidth=0.2
+  ) +
+  coord_quickmap(xlim=c(-98, -92),
+                 ylim=c(58, 59.5))
+```
+
+```{r join_points_site, fig.width=10, fig.height=4.5}
+
+ggplot(loc_sum,
+       aes(
+         x = median_long,
+         y = median_lat,
+         color = individual_local_identifier,
+       )
+  ) +
+  geom_point(size=3) +
+  annotation_borders(
+    linewidth=0.2
+  )  +
+  coord_quickmap(xlim=c(-98, -92),
+                 ylim=c(58, 59.5)) +
+  scale_color_brewer(palette = "Set1") + 
+  theme_bw()
+```

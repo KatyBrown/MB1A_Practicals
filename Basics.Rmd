@@ -1,0 +1,445 @@
+---
+title: "Introduction to R"
+author: "Katy Brown"
+date: "2026-07-03"
+output:
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+    theme: united
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "~/MB1A_Practicals")
+library(learnr)
+library(knitr)
+library(gt)
+library(tidyverse)
+tutorial_options(exercise.completion=FALSE)
+
+```
+
+## The R Language
+In this session, we will learn the very basics of using the programming language R for data analysis. For today, all our code will be within this interactive notebook, next week we'll move on to using RStudio, an interactive development environment (IDE) for developing more complicated code.
+
+The R language was initially developed by two programmers, Ross Ihaka and Robert Gentleman, in 1993, for teaching introductory statistics. It has become one of the most commonly used languages in scientific computing, particularly amongst biologists. 
+
+
+## Variables
+
+One of the fundamental concepts in programming is a **variable**.
+
+Basically, a variable associates a specific name with a specific value. In R, we use the operator `<-` to assign a value to a name.
+
+For example, by running the code below, we are saying that the name `my_variable` refers to the value `12`. 
+When you run the code, it will seem like nothing has happened, but, interally, R now knows that `my_variable` is equal to `12`.
+
+```{r variable_basic}
+my_variable <- 12
+```
+
+To check this has worked, we can use a **function**, `print` to show the value of our variable on the screen.
+
+```{r variable_retrieve}
+my_variable <- 12
+print (my_variable)
+```
+
+If we don't run the first line of code, the second line will generate an error - try it below:
+
+```{r variable_error, exercise=TRUE}
+print (my_variable)
+```
+
+**Exercise**
+
+In the box below, make a variable named `vari` and assign a value of `15`, then print the value.
+
+```{r variable_exercise, exercise=TRUE}
+```
+
+```{r variable_exercise-solution}
+vari <- 15
+print (vari)
+```
+
+Your code should print number 15 on the screen.
+
+We can change the value of our variable by assigning it a new value. Although the first line of code is run, the value is then replaced in the second line, so when we reach the third line, the value is `10`.
+
+```{r variable_reassign}
+my_variable <- 12
+my_variable <- 10
+print (my_variable)
+```
+
+**Exercise**
+
+What would be the value of `whatsmynumber` after running all of code below?
+
+```{r variable_setup}
+whatsmynumber <- 1
+whatsmynumber <- 5
+```
+
+
+```{r variable_quiz, echo=FALSE}
+question_text("", answer(5, correct=TRUE), allow_retry = TRUE)
+```
+
+### Variable Names
+
+You can have as many variables as you like, and use any name, with a few exceptions.
+
+
+Your variable names should be one word, without spaces and without punctuation except underscores ("_"), so the following won't work:
+
+```{r variable_punc, exercise=TRUE}
+my-var <- 12
+```
+
+
+```{r variable_space, exercise=TRUE}
+my var <- 12
+```
+
+In R, variable names can't start with a number.
+
+```{r variable_num, exercise=TRUE}
+1var <- 12
+```
+
+Some words are used by the R language itself, so although you can use them as variable names, it can become confusing and stop other functions from working. 
+
+Some will not work at all:
+
+```{r variable_if, exercise=TRUE}
+if <- 12
+```
+
+Others will work, but cause problems. For example, if you assign a value to the word `mean`, then you won't be able to calculate mean values using the R function `mean`.
+
+To check if a word already exists as a function in R, you can type `?` followed by the word. This will show the help screen for any existing functions. 
+
+e.g.
+
+```{r variable_check_used, exercise=TRUE}
+?mean
+```
+
+Compare this to a variable name which is not already in use:
+
+```{r variable_check_ok, exercise=TRUE}
+?banana
+```
+
+## Types of variable
+
+### Numeric, character and logical variables
+Different types of data can be stored as variables. So far all of our values have been numeric.
+
+There are many types of variable in R.
+
+Some of the most important are:
+
+#### Numeric
+(sometimes also called `double`)
+
+
+All variables which are numbers can be classed as numeric (there are some more specific number types but you don't need these yet)
+
+```{r numeric_variable}
+x <- 1
+print (x)
+
+x <- 1.74
+print (x)
+
+x <- 4e-3
+print (x)
+```
+
+#### Character
+(sometimes called a `string`)
+
+
+A character variable consists of text - it can be one or multiple words.
+
+```{r character_variable}
+x <- "hello"
+print (x)
+
+x <- "I am a variable"
+print (x)
+```
+
+#### Logical
+(sometimes called `boolean`)
+
+These can only be TRUE or FALSE.
+
+```{r bool_variable}
+x <- TRUE
+print (x)
+
+x <- FALSE
+print (x)
+```
+
+#### Identifying types of variables
+
+We can find out what type of variable we have using the function `class`.
+```{r print_class}
+x <- "hi there"
+print (class(x))
+
+x <- 1513871
+print (class(x))
+
+x <- FALSE
+print (class(x))
+
+```
+
+
+### Types of Variable Exercise 1
+
+**Exercise**<br>
+In the box below, create a character, numerical and logical variable, print them, then check their class.
+
+```{r exercise_var_types, exercise=TRUE}
+
+```
+
+
+### Types of Variable Exercise 1 Example Solution
+
+For example
+
+```{r exercise_var_types_solution, exercise=TRUE}
+# for example
+my_favourite_number <- 11
+my_favourite_word <- 'hullabaloo'
+is_this_true <- FALSE
+
+print (class(my_favourite_number))
+print (class(my_favourite_word))
+print (class(is_this_true))
+```
+
+
+### Types of Variable Exercise 2
+
+You have conducted an experiment in which you have treated one batch of cells with radiation and kept the other as a control, then counted the number of live cells before and after.
+
+The attributes of your two batches of cells are in this table:
+
+```{r table_cells, echo=FALSE}
+df <- data.frame(
+          cell_ID = c("CX1", "CX2"),
+  treated = c(TRUE, FALSE),
+  num_cells_before = c(5415, 8123),
+  num_cells_after = c(1432, 7543)
+)
+
+gt(df)
+```
+
+Create eight variables of appropriate types which together contain all of the information in the table.
+
+```{r table_variables, exercise=TRUE}
+```
+
+
+### Types of Variable Exercise 2 Example Solution
+
+```{r table_variables_sol}
+cell_id_1 <- "CX1"
+cell_id_2 <- "CX2"
+
+treated_1 <- TRUE
+treated_2 <- FALSE
+
+n_before_1 <- 5415
+n_before_2 <- 8123
+
+n_after_1 <- 1432
+n_after_2 <- 7543
+```
+
+
+## Multi-Element Variables
+
+### Vectors
+
+All of the variables we've created so far just have a single element - one number, one section of text, or one TRUE/FALSE.
+
+However, we can also create variables which contain multiple elements.
+
+One of the most common types of multi-element variable in R is a **vector**.
+
+Vectors in R are (usually) specified using the function `c`.
+
+```{r first_vector}
+my_first_vector <- c(1, 5, 9)
+print (my_first_vector)
+```
+
+You can have vectors with all numbers, all text, or all logical values, but everything needs to be the same type.
+
+```{r text_bool_vectors}
+character_vec <- c('hello', 'this', 'is', 'a', 'character', 'vector')
+print (character_vec)
+
+logical_vec <- c(TRUE, FALSE, TRUE)
+print (logical_vec)
+```
+
+If you have existing variables, you can put them into a vector using their variable names.
+
+```{r vectors_of_variables}
+x <- 1
+y <- 2
+z <- 3
+
+xyz_vec <- c(x, y, z)
+```
+
+### Vector Exercise
+
+Take the variables you created earlier, with the data from the radiation experiment, and combine them into four vectors, one for each column of the table.
+
+
+```{r vector_df, exercise=TRUE}
+
+```
+
+### Vector Exercise Example Solution
+
+```{r vector_df_solution}
+cell_id_1 <- "CX1"
+cell_id_2 <- "CX2"
+
+treated_1 <- TRUE
+treated_2 <- FALSE
+
+n_before_1 <- 5415
+n_before_2 <- 8123
+
+n_after_1 <- 1432
+n_after_2 <- 7543
+
+cell_id <- c(cell_id_1, cell_id_2)
+treated <- c(treated_1, treated_2)
+n_before <- c(n_before_1, n_before_2)
+n_after <- c(n_after_1, n_after_2)
+```
+
+### Accessing elements of a vector
+
+Once our values are in a vector, we can access them using an *index*, which refers to the position of the value within the vector. Indices are indicated within square brackets - `[]`.
+
+```{r vector_indices}
+nice_food <- c('cheese', 'beans', 'potatoes')
+
+print (nice_food[1])
+
+print (nice_food[2])
+
+print (nice_food[3])
+```
+
+
+### Index Exercise 
+
+Isolate the fourth value in this vector and assign it to a new variable, then print its value.
+
+```{r vector_indices_exercise, exercise=TRUE}
+all_my_pets <- c('dog', 'horse', 'guinea pig', 'chicken', 'cat')
+```
+
+### Index Exercise Example Solution
+
+```{r vector_indices_exercise_solution, exercise=TRUE}
+all_my_pets <- c('dog', 'horse', 'guinea pig', 'chicken', 'cat')
+my_only_bird <- all_my_pets[4]
+print(my_only_bird)
+```
+
+## Data Frames
+
+### Data Frames
+
+Our next variable type is a **data frame** (sometimes called a **tibble**), which is one of the types of variable you'll most commonly use. A data frame is basically a table, consisting of rows and columns. Each row is a single record, corresponding to some entity - a cell, a person, a country - and each column is a specific piece of information.
+
+For example:
+
+```{r csv_example, echo=FALSE}
+df <- tibble(
+          fruit = c("apple", "pear", "banana"),
+  length = c(22, 30, 55),
+  weight = c(150, 165, 170)
+)
+
+gt(df)
+```
+
+In this data frame, there are three columns - fruit, length and weight, and three rows, each containing information about a specific fruit.
+
+We can build a data frame using the R function `tibble` (note that there is also an R function `data.frame` which you might see referenced elsewhere, usually modern applications use `tibble` as it is more user-friendly).
+
+I would specify the data frame above as follows:
+
+```{r make_tibble}
+my_dataframe <- tibble(fruit = c("apple", "pear", "banana"),
+                       length = c(22, 30, 55),
+                       weight = c(150, 165, 170))
+
+
+print(my_dataframe)
+```
+
+Although we can print our data frame, it's not format particularly nicely. Instead, we can use the function `gt`.
+
+```{r gt}
+my_dataframe <- tibble(fruit = c("apple", "pear", "banana"),
+                       length = c(22, 30, 55),
+                       weight = c(150, 165, 170))
+
+gt(my_dataframe)
+```
+
+### Data Frame Exercise
+
+Let's revisit our radiation experiment data.
+
+
+```{r table_cells_df, echo=FALSE}
+df <- data.frame(
+          cell_ID = c("CX1", "CX2"),
+  treated = c(TRUE, FALSE),
+  num_cells_before = c(5415, 8123),
+  num_cells_after = c(1432, 7543)
+)
+
+gt(df)
+```
+
+Using a data frame and the `gt` function, reproduce this table.
+
+```{r df_exercise, exercise=TRUE}
+
+```
+
+### Vector Exercise Example Solution
+
+```{r df_exercise_solution}
+df <- data.frame(cell_ID = c("CX1", "CX2"),
+                 treated = c(TRUE, FALSE),
+                 num_cells_before = c(5415, 8123),
+                 num_cells_after = c(1432, 7543)) 
+
+gt(df)
+```
+
